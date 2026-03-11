@@ -1,0 +1,136 @@
+/* 무한의 계단 - 레퍼런스(나노바나나) 픽셀 아트 스타일 */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #2d2d44;
+  font-family: "Press Start 2P", "Courier New", monospace;
+}
+
+/* 보라색 픽셀 아트 테두리 - 고전 콘솔 느낌 */
+#pixel-frame {
+  padding: 12px;
+  background: linear-gradient(180deg, #6A5ACD 0%, #5B4BB5 50%, #4A3F9E 100%);
+  border: 4px solid #9370DB;
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,0.15),
+    inset 0 2px 4px rgba(0,0,0,0.3),
+    0 0 0 2px #7B68EE,
+    0 4px 0 #4A3F9E,
+    0 8px 16px rgba(0,0,0,0.4);
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+#game-container {
+  position: relative;
+  width: 480px;
+  height: 720px;
+  overflow: hidden;
+  background: #1a1a2e;
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.1);
+}
+
+#game-canvas {
+  display: block;
+  width: 480px;
+  height: 720px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  vertical-align: bottom;
+}
+
+#gameover-overlay,
+#idle-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: "Press Start 2P", monospace;
+  font-size: 10px;
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 2px 2px 0 #000;
+}
+
+#gameover-overlay.hidden,
+#idle-overlay.hidden {
+  display: none;
+}
+
+#gameover-overlay p,
+#idle-overlay p {
+  margin: 8px 0;
+}
+
+#gameover-score {
+  font-size: 12px;
+  color: #FFD700;
+  margin: 4px 0;
+}
+
+#gameover-overlay #btn-restart {
+  pointer-events: auto;
+  margin-top: 16px;
+  padding: 12px 16px;
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  color: #fff;
+  background: #9370DB;
+  border: 3px solid #7B68EE;
+  border-radius: 0;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #5B4BB5;
+}
+
+#gameover-overlay #btn-restart:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #5B4BB5;
+}
+
+/* 하단 버튼: 480x720 캔버스에서 스케일(1.5) 반영 — 논리 (12,408) 140x56 → 화면 (18,612) 210x84 */
+#buttons {
+  position: absolute;
+  bottom: 24px;
+  left: 18px;
+  right: 18px;
+  height: 84px;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  pointer-events: none;
+}
+
+#buttons button {
+  pointer-events: auto;
+  width: 210px;
+  height: 84px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0;
+  color: transparent;
+}
+
+#buttons button:hover {
+  background: rgba(147, 112, 219, 0.15);
+}
+
+#buttons button:active {
+  background: rgba(91, 75, 181, 0.2);
+}
