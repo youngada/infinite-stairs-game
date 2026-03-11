@@ -96,7 +96,7 @@ function gameOver() {
   const scoreEl = document.getElementById("gameover-score");
   if (overlay) {
     overlay.classList.remove("hidden");
-    if (scoreEl) scoreEl.textContent = `SCORE: ${state.score}  HI: ${state.highScore}`;
+    if (scoreEl) scoreEl.textContent = `SCORE: ${state.score}  HIGH: ${state.highScore}`;
   }
 }
 

@@ -18,8 +18,12 @@ import {
  * @typedef {{ x: number, y: number }} Stair  세계 좌표 (계단 윗면 중앙)
  */
 
+/** 90%는 1~4칸(방향전환 자주), 10%만 5~8칸 */
 function randomConsecutive() {
-  return STAIR_MIN_CONSECUTIVE + Math.floor(Math.random() * (STAIR_MAX_CONSECUTIVE - STAIR_MIN_CONSECUTIVE + 1));
+  if (Math.random() < 0.1) {
+    return 5 + Math.floor(Math.random() * 4);
+  }
+  return 1 + Math.floor(Math.random() * 4);
 }
 
 export const HALF_W = STAIR_WIDTH / 2;
@@ -41,13 +45,18 @@ export function generateStairs(count = INITIAL_STAIRS_COUNT) {
     x += dir * HALF_W;
     y -= HALF_H;
     if (x < STAIR_X_MIN) {
-      x = STAIR_X_MIN;
+      x = STAIR_X_MIN + HALF_W;
       dir = 1;
       remaining = randomConsecutive();
     } else if (x > STAIR_X_MAX) {
-      x = STAIR_X_MAX;
+      x = STAIR_X_MAX - HALF_W;
       dir = -1;
       remaining = randomConsecutive();
+    }
+    if (x === stairs[stairs.length - 1].x) {
+      x += dir * HALF_W;
+      if (x < STAIR_X_MIN) x = STAIR_X_MIN + HALF_W;
+      if (x > STAIR_X_MAX) x = STAIR_X_MAX - HALF_W;
     }
     stairs.push({ x, y });
     remaining--;
@@ -76,13 +85,18 @@ export function appendStair(stairs, lastDir, remaining) {
   let x = last.x + nextDir * HALF_W;
   let y = last.y - HALF_H;
   if (x < STAIR_X_MIN) {
-    x = STAIR_X_MIN;
+    x = STAIR_X_MIN + HALF_W;
     nextDir = 1;
     nextRemaining = randomConsecutive();
   } else if (x > STAIR_X_MAX) {
-    x = STAIR_X_MAX;
+    x = STAIR_X_MAX - HALF_W;
     nextDir = -1;
     nextRemaining = randomConsecutive();
+  }
+  if (x === last.x) {
+    x += nextDir * HALF_W;
+    if (x < STAIR_X_MIN) x = STAIR_X_MIN + HALF_W;
+    if (x > STAIR_X_MAX) x = STAIR_X_MAX - HALF_W;
   }
 
   stairs.push({ x, y });

@@ -15,13 +15,31 @@ import {
 const CENTER_X = LOGICAL_WIDTH / 2;
 const CENTER_Y = 280;
 
-// 네온/사이버펑크 팔레트
+// 밤 팔레트
 const BG_DARK = "#1a1a2e";
 const BG_MID = "#2d2d44";
 const BG_NEON = "#16213e";
 const NEON_BLUE = "#0f3460";
+// 아침 팔레트 (점수 올라가면 전환)
+const MORNING_TOP = "#87CEEB";
+const MORNING_MID = "#B8D4E8";
+const MORNING_LOW = "#D4E8F7";
+const MORNING_BOTTOM = "#FFE4B5";
 const CITY_SILHOUETTE = "rgba(15, 25, 45, 0.85)";
 const CLOUD_FILL = "rgba(100, 120, 180, 0.12)";
+
+function hexToRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+function lerpColor(hexA, hexB, t) {
+  const a = hexToRgb(hexA);
+  const b = hexToRgb(hexB);
+  const r = Math.round(a.r + (b.r - a.r) * t);
+  const g = Math.round(a.g + (b.g - a.g) * t);
+  const bl = Math.round(a.b + (b.b - a.b) * t);
+  return `rgb(${r},${g},${bl})`;
+}
 
 export function worldToScreen(wx, wy, camX, camY) {
   const sx = Math.round(CENTER_X + (wx - camX));
@@ -38,21 +56,24 @@ function setPixelPerfect(ctx) {
   ctx.imageSmoothingQuality = "low";
 }
 
-/** 밤하늘 + 네온 블루 그라데이션, 도시 빌딩 실루엣, 초승달 */
-function drawBackground(ctx) {
+/** 밤→아침 그라데이션: 점수 올라갈수록 밝아짐 (t=0 밤, t=1 아침) */
+function drawBackground(ctx, score = 0) {
+  const scoreMax = 80;
+  const t = Math.min(1, score / scoreMax);
   const g = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
-  g.addColorStop(0, BG_DARK);
-  g.addColorStop(0.35, BG_MID);
-  g.addColorStop(0.6, BG_NEON);
-  g.addColorStop(1, NEON_BLUE);
+  g.addColorStop(0, lerpColor(BG_DARK, MORNING_TOP, t));
+  g.addColorStop(0.35, lerpColor(BG_MID, MORNING_MID, t));
+  g.addColorStop(0.6, lerpColor(BG_NEON, MORNING_LOW, t));
+  g.addColorStop(1, lerpColor(NEON_BLUE, MORNING_BOTTOM, t));
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
-  // 초승달 (우상단): 밝은 초승달 모양 — 반원 호 + 내부 채우기, 잘 보이게
+  // 초승달 (밤에만 선명, 아침엔 서서히 흐려짐)
   const moonX = 260;
   const moonY = 38;
   const moonR = 14;
   ctx.save();
+  ctx.globalAlpha = 1 - t * 0.85;
   ctx.beginPath();
   ctx.arc(moonX + moonR, moonY + moonR, moonR, 0, Math.PI * 2);
   ctx.fillStyle = "#f5f0dc";
@@ -61,16 +82,16 @@ function drawBackground(ctx) {
   ctx.beginPath();
   ctx.arc(moonX + moonR + 6, moonY + moonR, moonR - 1, 0, Math.PI * 2);
   ctx.fill();
-  ctx.restore();
   ctx.fillStyle = "#e8e4c9";
   ctx.fillRect(moonX + 4, moonY + 8, 6, 6);
   ctx.fillRect(moonX + 10, moonY + 4, 4, 4);
   ctx.fillStyle = "#faf5e8";
   ctx.fillRect(moonX + 6, moonY + 10, 4, 4);
   ctx.fillRect(moonX + 12, moonY + 6, 2, 2);
+  ctx.restore();
 
-  // 후경 빌딩 (더 어둡고 작게)
-  ctx.fillStyle = "rgba(10, 18, 35, 0.9)";
+  const buildingAlpha = 0.9 - t * 0.5;
+  ctx.fillStyle = `rgba(10, 18, 35, ${buildingAlpha})`;
   const backHeights = [100, 140, 80, 120, 90, 130, 70];
   let bx = -10;
   for (let i = 0; i < 14; i++) {
@@ -80,8 +101,8 @@ function drawBackground(ctx) {
     bx += bw + 3;
   }
 
-  // 전경 빌딩 (도시 느낌, 창문 빛 일부)
-  ctx.fillStyle = CITY_SILHOUETTE;
+  // 전경 빌딩 (아침엔 실루엣 옅게)
+  ctx.fillStyle = `rgba(15, 25, 45, ${0.85 - t * 0.5})`;
   const heights = [100, 150, 70, 120, 90, 140, 60, 110, 85];
   let x = 0;
   for (let i = 0; i < 11; i++) {
@@ -94,7 +115,7 @@ function drawBackground(ctx) {
       ctx.fillRect(x + 4, LOGICAL_HEIGHT - h + wy, 3, 4);
       ctx.fillRect(x + w - 10, LOGICAL_HEIGHT - h + wy + 5, 3, 4);
     }
-    ctx.fillStyle = CITY_SILHOUETTE;
+    ctx.fillStyle = `rgba(15, 25, 45, ${0.85 - t * 0.5})`;
     x += w + 5;
   }
   ctx.fillRect(0, LOGICAL_HEIGHT - 36, LOGICAL_WIDTH, 36);
@@ -316,7 +337,7 @@ function drawTopUI(ctx, state) {
   const scoreText = `SCORE: ${score}`;
   ctx.strokeText(scoreText, 6, 12);
   ctx.fillText(scoreText, 6, 12);
-  const hiText = `HI: ${highScore}`;
+  const hiText = `HIGH: ${highScore}`;
   const hiW = ctx.measureText(hiText).width;
   ctx.strokeText(hiText, r(LOGICAL_WIDTH - hiW - 6), 12);
   ctx.fillText(hiText, r(LOGICAL_WIDTH - hiW - 6), 12);
@@ -364,14 +385,15 @@ function drawBottomButtons(ctx) {
     ctx.font = '8px "Press Start 2P", monospace';
     ctx.fillStyle = "#e0e0ff";
     ctx.textAlign = "center";
+    const centerY = y + btnH / 2;
     if (isArrow) {
-      ctx.fillText("A", r(x + btnW / 2), r(y + 18));
+      ctx.fillText("A", r(x + btnW / 2), r(centerY - 6));
       ctx.font = '5px "Press Start 2P", monospace';
-      ctx.fillText("TURN ONLY", r(x + btnW / 2), r(y + 32));
+      ctx.fillText("TURN ONLY", r(x + btnW / 2), r(centerY + 8));
     } else {
-      ctx.fillText("SPACE", r(x + btnW / 2), r(y + 18));
+      ctx.fillText("SPACE", r(x + btnW / 2), r(centerY - 6));
       ctx.font = '5px "Press Start 2P", monospace';
-      ctx.fillText("JUMP ONLY", r(x + btnW / 2), r(y + 32));
+      ctx.fillText("JUMP ONLY", r(x + btnW / 2), r(centerY + 8));
     }
     ctx.textAlign = "left";
   }
@@ -386,7 +408,7 @@ export function render(ctx, state) {
   setPixelPerfect(ctx);
   ctx.save();
   ctx.scale(SCALE, SCALE_Y);
-  drawBackground(ctx);
+  drawBackground(ctx, state.score);
   const { stairs, character, camera } = state;
   const cx = camera.x,
     cy = camera.y;

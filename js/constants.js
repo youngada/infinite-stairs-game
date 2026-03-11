@@ -13,9 +13,9 @@ export const STAIR_HEIGHT = 52;
 export const PLATFORM_W = 48;
 export const PLATFORM_H = 20;
 
-// 지그재그: 한 방향 연속 5~12칸
-export const STAIR_MIN_CONSECUTIVE = 5;
-export const STAIR_MAX_CONSECUTIVE = 12;
+// 지그재그: 한 방향 연속 1~8칸 (최대 8, 그 아래로 불규칙하게 난이도 상승)
+export const STAIR_MIN_CONSECUTIVE = 1;
+export const STAIR_MAX_CONSECUTIVE = 8;
 
 // 캐릭터 픽셀 크기 (이미지 스프라이트 표시 크기)
 export const CAT_SIZE = 28;

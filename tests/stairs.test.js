@@ -33,7 +33,7 @@ describe("generateStairs", () => {
     }
   });
 
-  it("한 방향 연속 칸 수가 5~12 범위 (경계 제외)", () => {
+  it("한 방향 연속 칸 수가 1~8 범위 (경계 제외)", () => {
     const result = generateStairs(100);
     let run = 1;
     let dir = result.stairs[1].x - result.stairs[0].x;
